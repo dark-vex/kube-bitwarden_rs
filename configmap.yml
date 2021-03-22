@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bitwarden
+  labels:
+    app: bitwarden
+data: 
+  smtp_server: 'smtp.domain.tld'
+  smtp_from: 'user@smtp.domain.tld'
+  smtp_port: '587'
+  smtp_ssl: 'true'
+  smtp_username: 'user@smtp.domain.tld'
+  websocket: 'true'
+  DATA_FOLDER: '/data'
+  domain_fqdn: 'https://bitwarden.domain.tld'
+  rocket_workers: '10'
+  rocket_port: '8080'
+  password_hint: 'false'
+  web_vault: 'true'

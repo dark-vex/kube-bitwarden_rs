@@ -29,42 +29,51 @@ spec:
         env:
         - name: DOMAIN
           valueFrom:
-            configMapRef:
-              name: domain_fqdn
+            configMapKeyRef:
+              name: bitwarden
+              key: domain-fqdn
         - name: DATA_FOLDER
           value: /data
         - name: ROCKET_WORKERS
           valueFrom:
-            configMapRef:
-              name: rocket_workers
+            configMapKeyRef:
+              name: bitwarden
+              key: rocket-workers
         - name: ROCKET_PORT
           valueFrom:
-            configMapRef:
-              name: rocket_port
+            configMapKeyRef:
+              name: bitwarden
+              key: rocket-port
         - name: SHOW_PASSWORD_HINT
           valueFrom:
-            configMapRef:
-              name: password_hint
+            configMapKeyRef:
+              name: bitwarden
+              key: password-hint
         - name: SMTP_FROM
           valueFrom:
-            configMapRef:
-              name: smtp_from
+            configMapKeyRef:
+              name: bitwarden
+              key: smtp-from
         - name: SMTP_HOST
           valueFrom:
-            configMapRef:
-              name: smtp_server
+            configMapKeyRef:
+              name: bitwarden
+              key: smtp-server
         - name: SMTP_PORT
           valueFrom:
-            configMapRef:
-              name: smtp_port
+            configMapKeyRef:
+              name: bitwarden
+              key: smtp-port
         - name: SMTP_SSL
           valueFrom:
-            configMapRef:
-              name: smtp_ssl
+            configMapKeyRef:
+              name: bitwarden
+              key: smtp-ssl
         - name: SMTP_USERNAME
           valueFrom:
-            configMapRef:
-              key: smtp_username
+            configMapKeyRef:
+              name: bitwarden
+              key: smtp-username
         - name: SMTP_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -72,12 +81,14 @@ spec:
               key: smtp_password
         - name: WEBSOCKET_ENABLED
           valueFrom:
-            configMapRef:
-              name: websocket
+            configMapKeyRef:
+              name: bitwarden
+              key: websocket
         - name: WEB_VAULT_ENABLED
           valueFrom:
-            configMapRef:
-              name: web_vault
+            configMapKeyRef:
+              name: bitwarden
+              key: web-vault
         ports:
         - containerPort: 8080
           name: http

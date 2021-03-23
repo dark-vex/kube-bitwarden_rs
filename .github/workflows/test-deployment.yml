@@ -28,10 +28,13 @@ jobs:
         run: |
           while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
           echo "Node Ready we can go ahead"
+          kubectl get nodes
       - name: Get pods test
         run: kubectl get pods -A
       - name: Deploying app
         run: |
+          echo "Filling manifest variable"
+          sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' smtp-secret.yaml
           echo "Creating bitwarden namespace..."
           kubectl create ns bitwarden
           echo "Applying bitwarden manifests..."

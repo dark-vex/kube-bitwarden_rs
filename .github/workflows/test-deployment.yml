@@ -26,11 +26,16 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if Node is in Ready state
         run: |
-          export GET_NODE=`kubectl get nodes|grep -v STATUS | awk '{print $2}'`
-          while [ $GET_NODE != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
+          while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
           echo "Node Ready we can go ahead"
       - name: Get pods test
         run: kubectl get pods -A
+      - name: Deploying app
+        run: |
+          echo "Creating bitwarden namespace..."
+          kubectl create ns bitwarden
+          echo "Applying bitwarden manifests..."
+          kubectl apply -n bitwarden -f .
 
 #  k8s18:
 #    name: Deploy bitwarden_rs on Minikube (k8s v1.18.2)

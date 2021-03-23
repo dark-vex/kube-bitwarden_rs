@@ -23,9 +23,11 @@ jobs:
         with:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
-          #github token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Interact with the cluster
-        run: kubectl get nodes
+          github token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if Node is in Ready state
+        run: |
+          GET_NODE=`kubectl get nodes|grep -v STATUS | awk '{print $2}'`
+          while [ "$i" != "Ready" ]; do echo "Kubernetes node not Ready"; sleep 120; done
 
   k8s18:
     name: Deploy bitwarden_rs on Minikube (k8s v1.18.2)
@@ -38,6 +40,8 @@ jobs:
         with:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.18.2'
-          #github token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Interact with the cluster
-        run: kubectl get nodes
+          github token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if Node is in Ready state
+        run: |
+          GET_NODE=`kubectl get nodes|grep -v STATUS | awk '{print $2}'`
+          while [ "$i" != "Ready" ]; do echo "Kubernetes node not Ready"; sleep 120; done

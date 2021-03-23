@@ -26,22 +26,30 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if Node is in Ready state
         run: |
-          GET_NODE=`kubectl get nodes|grep -v STATUS | awk '{print $2}'`
-          while [ "$i" != "Ready" ]; do echo "Kubernetes node not Ready"; sleep 120; done
+          export GET_NODE=`kubectl get nodes|grep -v STATUS | awk '{print $2}'`
+          while [ $GET_NODE != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
+          echo "Node Ready we can go ahead"
+      - name: Get pods test
+        run: kubectl get pods -A
 
-  k8s18:
-    name: Deploy bitwarden_rs on Minikube (k8s v1.18.2)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Setup Minikube Kubernetes Cluster (k8s v1.18.2)
-        uses: manusa/actions-setup-minikube@v2.3.1
-        with:
-          minikube version: 'v1.16.0'
-          kubernetes version: 'v1.18.2'
-          github token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check if Node is in Ready state
-        run: |
-          GET_NODE=`kubectl get nodes|grep -v STATUS | awk '{print $2}'`
-          while [ "$i" != "Ready" ]; do echo "Kubernetes node not Ready"; sleep 120; done
+#  k8s18:
+#    name: Deploy bitwarden_rs on Minikube (k8s v1.18.2)
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v1
+#      - name: Setup Minikube Kubernetes Cluster (k8s v1.18.2)
+#        uses: manusa/actions-setup-minikube@v2.3.1
+#        with:
+#          minikube version: 'v1.16.0'
+#          kubernetes version: 'v1.18.2'
+#          github token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Check if Node is in Ready state
+#        run: |
+#          GET_NODE=`kubectl get nodes|grep -v STATUS | awk '{print $2}'`
+#          while [ "$GET_NODE" != "Ready" ]; do echo "Kubernetes node not Ready"; sleep 120; done
+#          echo "Node Ready we can go ahead"
+##          while [ "`kubectl get nodes|grep master|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready"; kubectl get nodes|grep -v STATUS | awk '{print $2}'; echo "ciao"; sleep 120; done;
+##          while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
+#      - name: Get pods test
+#        run: kubectl get pods -A

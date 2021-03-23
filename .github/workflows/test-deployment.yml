@@ -21,16 +21,22 @@ jobs:
       - name: Setup Minikube Kubernetes Cluster (k8s v1.19.2)
         uses: manusa/actions-setup-minikube@v2.3.1
         with:
-          minikube version: 'v1.16.0'
+          minikube version: 'v1.18.1'
           kubernetes version: 'v1.19.2'
           github token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if Node is in Ready state
         run: |
           while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
           echo "Node Ready we can go ahead"
-          kubectl get nodes
-      - name: Get pods test
-        run: kubectl get pods -A
+          kubectl get nodes -o wide
+      - name: Enable nginx ingress on Minikube and install cert-manager
+        run: |
+          minikube addons enable ingress
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
+      - name: Get pods
+        run: |
+          kubectl rollout status deployment/ingress-nginx-controller -n kube-system
+          kubectl get pods -A
       - name: Deploying app
         run: |
           echo "Filling manifest variables"
@@ -39,6 +45,14 @@ jobs:
           kubectl create ns bitwarden
           echo "Applying bitwarden manifests..."
           kubectl apply -n bitwarden -f .
+      - name: List minikube service List
+        run: |
+          minikube service list
+      - name: Get ingress List
+        run: |
+          kubectl get ingress -n bitwarden
+          echo "------------- Test bitwarden availability with curl -------------"
+          curl -vkL bitwarden.domain.tld
 
 #  k8s18:
 #    name: Deploy bitwarden_rs on Minikube (k8s v1.18.2)
@@ -49,7 +63,7 @@ jobs:
 #      - name: Setup Minikube Kubernetes Cluster (k8s v1.18.2)
 #        uses: manusa/actions-setup-minikube@v2.3.1
 #        with:
-#          minikube version: 'v1.16.0'
+#          minikube version: 'v1.18.1'
 #          kubernetes version: 'v1.18.2'
 #          github token: ${{ secrets.GITHUB_TOKEN }}
 #      - name: Check if Node is in Ready state

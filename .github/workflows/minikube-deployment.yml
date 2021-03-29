@@ -1,0 +1,123 @@
+name: Test app deployment on Minikube
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  k8s19:
+    name: Deploy bitwarden_rs on Minikube (k8s v1.19.2)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup Minikube Kubernetes Cluster (k8s v1.19.2)
+        uses: manusa/actions-setup-minikube@v2.3.1
+        with:
+          minikube version: 'v1.18.1'
+          kubernetes version: 'v1.19.2'
+          github token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if Node is in Ready state
+        run: |
+          while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
+          echo "Node Ready we can go ahead"
+          kubectl get nodes -o wide
+      - name: Enable nginx ingress on Minikube and install cert-manager
+        run: |
+          minikube addons enable ingress
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
+      - name: Get pods
+        run: |
+          kubectl rollout status deployment/ingress-nginx-controller -n kube-system
+          kubectl get pods -A
+      - name: Deploying app
+        run: |
+          echo "Filling manifest variables"
+          sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' smtp-secret.yml
+          ip -4 a sh eth0 | grep inet | awk '{print $2}' | awk -F'/16' '{print $1}' > HOST_IP
+          cat HOST_IP
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ingress.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' configmap.yml
+          echo "Creating bitwarden namespace..."
+          kubectl create ns bitwarden
+          echo "Applying bitwarden manifests..."
+          kubectl apply -n bitwarden -f .
+      - name: Check bitwarden rollout status
+        run: |
+          kubectl rollout status sts/bitwarden -n bitwarden
+          sleep 120
+      - name: Test bitwarden availability with curl via FQDN
+        run: |
+          echo "------------- curl bitwarden via FQDN -------------"
+          curl -kL https://bitwarden.$(cat HOST_IP).xip.io
+          echo "------------- check status code -------------"
+          curl -I https://www.google.com | grep "HTTP" | awk '{print $2}' > STATUS_CODE
+          if [[ $(cat STATUS_CODE) -eq 200 ]]
+          then
+            exit 0
+          else
+            echo "Error, status code: " $(cat STATUS_CODE)
+            exit 1
+          fi
+
+  k8s18:
+    name: Deploy bitwarden_rs on Minikube (k8s v1.20.2)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup Minikube Kubernetes Cluster (k8s v1.20.2)
+        uses: manusa/actions-setup-minikube@v2.3.1
+        with:
+          minikube version: 'v1.18.1'
+          kubernetes version: 'v1.20.2'
+          github token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if Node is in Ready state
+        run: |
+          while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
+          echo "Node Ready we can go ahead"
+          kubectl get nodes -o wide
+      - name: Enable nginx ingress on Minikube and install cert-manager
+        run: |
+          minikube addons enable ingress
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
+      - name: Get pods
+        run: |
+          kubectl rollout status deployment/ingress-nginx-controller -n kube-system
+          kubectl get pods -A
+      - name: Deploying app
+        run: |
+          echo "Filling manifest variables"
+          sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' smtp-secret.yml
+          ip -4 a sh eth0 | grep inet | awk '{print $2}' | awk -F'/16' '{print $1}' > HOST_IP
+          cat HOST_IP
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ingress.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' configmap.yml
+          echo "Creating bitwarden namespace..."
+          kubectl create ns bitwarden
+          echo "Applying bitwarden manifests..."
+          kubectl apply -n bitwarden -f .
+      - name: Check bitwarden rollout status
+        run: |
+          kubectl rollout status sts/bitwarden -n bitwarden
+          sleep 120
+      - name: Test bitwarden availability with curl via FQDN
+        run: |
+          echo "------------- curl bitwarden via FQDN -------------"
+          curl -kL https://bitwarden.$(cat HOST_IP).xip.io
+          echo "------------- check status code -------------"
+          curl -I https://www.google.com | grep "HTTP" | awk '{print $2}' > STATUS_CODE
+          if [[ $(cat STATUS_CODE) -eq 200 ]]
+          then
+            exit 0
+          else
+            echo "Error, status code: " $(cat STATUS_CODE)
+            exit 1
+          fi

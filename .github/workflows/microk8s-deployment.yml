@@ -1,4 +1,5 @@
-name: Test app deployment
+
+name: Test app deployment on Microk8s
 
 # Controls when the action will run. 
 on:
@@ -12,30 +13,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  k8s19:
-    name: Deploy bitwarden_rs on Minikube (k8s v1.19.2)
+  microk8s18:
+    name: Deploy bitwarden_rs on Microk8s (k8s v1.19)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Setup Minikube Kubernetes Cluster (k8s v1.19.2)
-        uses: manusa/actions-setup-minikube@v2.3.1
+      - name: Setup Microk8s Kubernetes Cluster (k8s v1.19)
+        uses: balchua/microk8s-actions@v0.2.1
         with:
-          minikube version: 'v1.18.1'
-          kubernetes version: 'v1.19.2'
-          github token: ${{ secrets.GITHUB_TOKEN }}
+          channel: '1.19/stable'
+          addons: '["dns", "rbac", "storage", "registry", "metrics-server", "ingress"]'
       - name: Check if Node is in Ready state
         run: |
           while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
           echo "Node Ready we can go ahead"
           kubectl get nodes -o wide
-      - name: Enable nginx ingress on Minikube and install cert-manager
+      - name: Install cert-manager
         run: |
-          minikube addons enable ingress
           kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
       - name: Get pods
         run: |
-          kubectl rollout status deployment/ingress-nginx-controller -n kube-system
+          kubectl rollout status ds/nginx-ingress-microk8s-controller -n ingress
           kubectl get pods -A
       - name: Deploying app
         run: |
@@ -67,38 +66,28 @@ jobs:
             exit 1
           fi
 
-
-#          kubectl logs `kubectl get pods -n kube-system | grep -v NAME | grep ingress-nginx-controller | awk '{print $1}'` -n kube-system
-#          kubectl describe pod bitwarden-0 -n bitwarden
-
-#          kubectl get svc -n bitwarden bitwarden -o jsonpath='{.spec.clusterIP}' | xargs -I {} curl -vkL https://{}
-#          echo "------------- Test bitwarden availability with FQQN -------------"
-#          cat ingress.yml|grep "host:" | awk '{print $3}' | xargs curl -vkL 
-
-  k8s18:
-    name: Deploy bitwarden_rs on Minikube (k8s v1.20.2)
+  microk8s19:
+    name: Deploy bitwarden_rs on Microk8s (k8s v1.20)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Setup Minikube Kubernetes Cluster (k8s v1.20.2)
-        uses: manusa/actions-setup-minikube@v2.3.1
+      - name: Setup Microk8s Kubernetes Cluster (k8s v1.20)
+        uses: balchua/microk8s-actions@v0.2.1
         with:
-          minikube version: 'v1.18.1'
-          kubernetes version: 'v1.20.2'
-          github token: ${{ secrets.GITHUB_TOKEN }}
+          channel: '1.19/stable'
+          addons: '["dns", "rbac", "storage", "registry", "metrics-server", "ingress"]'
       - name: Check if Node is in Ready state
         run: |
           while [ "`kubectl get nodes|grep -v STATUS | awk '{print $2}'`" != "Ready" ]; do echo "Kubernetes node not Ready... Retrying in 60 seconds"; sleep 60; done;
           echo "Node Ready we can go ahead"
           kubectl get nodes -o wide
-      - name: Enable nginx ingress on Minikube and install cert-manager
+      - name: Install cert-manager
         run: |
-          minikube addons enable ingress
           kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
       - name: Get pods
         run: |
-          kubectl rollout status deployment/ingress-nginx-controller -n kube-system
+          kubectl rollout status ds/nginx-ingress-microk8s-controller -n ingress
           kubectl get pods -A
       - name: Deploying app
         run: |

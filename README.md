@@ -1,6 +1,7 @@
 # kube-bitwarden_rs
-Minikube Deploy status ![bitwarden_rs branch parameter](https://github.com/dark-vex/kube-bitwarden_rs/actions/workflows/minikube-deployment.yml/badge.svg?branch=master)
-Microk8s Deploy status ![bitwarden_rs branch parameter](https://github.com/dark-vex/kube-bitwarden_rs/actions/workflows/microk8s-deployment.yml/badge.svg?branch=master)
+Minikube CI/CD status ![bitwarden_rs branch parameter](https://github.com/dark-vex/kube-bitwarden_rs/actions/workflows/minikube-deployment.yml/badge.svg?branch=master)
+
+Microk8s CI/CD status ![bitwarden_rs branch parameter](https://github.com/dark-vex/kube-bitwarden_rs/actions/workflows/microk8s-deployment.yml/badge.svg?branch=master)
 
 ## A Kubernetes deployment for bitwarden_rs
 These manifests provide a way to deploy fully functional `bitwarden_rs` application, using `nginx-ingress-controller` as ingress controller.

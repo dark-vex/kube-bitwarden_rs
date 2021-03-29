@@ -1,5 +1,5 @@
 
-name: Test app deployment on Microk8s
+name: Test deployment on Microk8s
 
 # Controls when the action will run. 
 on:

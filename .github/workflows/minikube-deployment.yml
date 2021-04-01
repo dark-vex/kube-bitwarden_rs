@@ -40,15 +40,15 @@ jobs:
       - name: Deploying app
         run: |
           echo "Filling manifest variables"
-          sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' smtp-secret.yml
+          sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' ./sqlite/smtp-secret.yml
           ip -4 a sh eth0 | grep inet | awk '{print $2}' | awk -F'/16' '{print $1}' > HOST_IP
           cat HOST_IP
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ingress.yml
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' configmap.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/ingress.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/configmap.yml
           echo "Creating bitwarden namespace..."
           kubectl create ns bitwarden
           echo "Applying bitwarden manifests..."
-          kubectl apply -n bitwarden -f .
+          kubectl apply -n bitwarden -f ./sqlite/
       - name: Check bitwarden rollout status
         run: |
           kubectl rollout status sts/bitwarden -n bitwarden
@@ -95,15 +95,15 @@ jobs:
       - name: Deploying app
         run: |
           echo "Filling manifest variables"
-          sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' smtp-secret.yml
+          sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' ./sqlite/smtp-secret.yml
           ip -4 a sh eth0 | grep inet | awk '{print $2}' | awk -F'/16' '{print $1}' > HOST_IP
           cat HOST_IP
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ingress.yml
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' configmap.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/ingress.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/configmap.yml
           echo "Creating bitwarden namespace..."
           kubectl create ns bitwarden
           echo "Applying bitwarden manifests..."
-          kubectl apply -n bitwarden -f .
+          kubectl apply -n bitwarden -f ./sqlite/
       - name: Check bitwarden rollout status
         run: |
           kubectl rollout status sts/bitwarden -n bitwarden

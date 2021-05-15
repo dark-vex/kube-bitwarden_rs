@@ -27,9 +27,9 @@ Please refer to the specific installation documents for the deployment type you 
 
 - ![bitwarden-rs sqlite](https://github.com/dark-vex/kube-bitwarden_rs/blob/master/docs/INSTALL.md)
 
-- ![bitwarden-rs MySQL](https://github.com/dark-vex/kube-bitwarden_rs/blob/master/docs/INSTALL-MySQL.md)
+- ![bitwarden-rs MySQL](https://github.com/dark-vex/kube-bitwarden_rs/blob/master/docs/INSTALL-MySQL.md) (TODO)
 
-- ![bitwarden-rs PostgreSQL](https://github.com/dark-vex/kube-bitwarden_rs/blob/master/docs/INSTALL-PostgreSQL.md)
+- ![bitwarden-rs PostgreSQL](https://github.com/dark-vex/kube-bitwarden_rs/blob/master/docs/INSTALL-PostgreSQL.md) (TODO)
 
 
 ## Note: For Kubernetes version between 1.14 to 1.18 please use ingress-backwards.yml which use API networking.k8s.io/v1beta1 and a different syntax

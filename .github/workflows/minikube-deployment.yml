@@ -43,8 +43,8 @@ jobs:
           sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' ./sqlite/smtp-secret.yml
           ip -4 a sh eth0 | grep inet | awk '{print $2}' | awk -F'/16' '{print $1}' > HOST_IP
           cat HOST_IP
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/ingress.yml
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/configmap.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.nip.io/g' ./sqlite/ingress.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.nip.io/g' ./sqlite/configmap.yml
           echo "Creating bitwarden namespace..."
           kubectl create ns bitwarden
           echo "Applying bitwarden manifests..."
@@ -56,7 +56,7 @@ jobs:
       - name: Test bitwarden availability with curl via FQDN
         run: |
           echo "------------- curl bitwarden via FQDN -------------"
-          curl -kL https://bitwarden.$(cat HOST_IP).xip.io
+          curl -kL https://bitwarden.$(cat HOST_IP).nip.io
           echo "------------- check status code -------------"
           curl -I https://www.google.com | grep "HTTP" | awk '{print $2}' > STATUS_CODE
           if [[ $(cat STATUS_CODE) -eq 200 ]]
@@ -98,8 +98,8 @@ jobs:
           sed -i 's/<BASE64_ENCODED_PASSWORD>/aGV5dGhpc2lzYXRlc3Q=/g' ./sqlite/smtp-secret.yml
           ip -4 a sh eth0 | grep inet | awk '{print $2}' | awk -F'/16' '{print $1}' > HOST_IP
           cat HOST_IP
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/ingress.yml
-          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.xip.io/g' ./sqlite/configmap.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.nip.io/g' ./sqlite/ingress.yml
+          sed -i 's/bitwarden.domain.tld/bitwarden.'$(cat HOST_IP)'.nip.io/g' ./sqlite/configmap.yml
           echo "Creating bitwarden namespace..."
           kubectl create ns bitwarden
           echo "Applying bitwarden manifests..."
@@ -111,7 +111,7 @@ jobs:
       - name: Test bitwarden availability with curl via FQDN
         run: |
           echo "------------- curl bitwarden via FQDN -------------"
-          curl -kL https://bitwarden.$(cat HOST_IP).xip.io
+          curl -kL https://bitwarden.$(cat HOST_IP).nip.io
           echo "------------- check status code -------------"
           curl -I https://www.google.com | grep "HTTP" | awk '{print $2}' > STATUS_CODE
           if [[ $(cat STATUS_CODE) -eq 200 ]]

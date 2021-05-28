@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bitwarden
+  labels:
+    app: bitwarden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bitwarden
+  template:
+    metadata:
+      labels:
+        app: bitwarden
+    spec:
+      serviceAccountName: bitwarden
+      securityContext:
+        fsGroup: 33
+        runAsUser: 33
+      containers:
+      # Alpine images they don't have DBs support (https://vaultwarden.discourse.group/t/solved-postgresql-feature-is-not-enabled/418/4)
+      - image: vaultwarden/server:1.21.0
+        imagePullPolicy: IfNotPresent
+        name: bitwarden
+        envFrom:
+          - configMapRef:
+              name: bitwarden-config
+        env:
+          - name: MYSQL_PASSWORD
+            valueFrom:
+               configMapKeyRef:
+                  name: bitwarden-mysql-config
+                  key: mysql.password
+          - name: MYSQL_USER
+            valueFrom:
+                configMapKeyRef:
+                  name: bitwarden-mysql-config
+                  key: mysql.user
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 3012
+          name: websocket
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /data
+          name: bitwarden-persistent-data
+        resources:
+          limits:
+            cpu: 300m
+            memory: 1Gi
+          requests:
+            cpu: 50m
+            memory: 256Mi
+      volumes:
+        - name: data-config
+          configMap:
+            name: bitwarden-config
+        - name: bitwarden-persistent-data
+          persistentVolumeClaim:
+            claimName: bitwarden-pv-claim
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bitwarden-pv-claim
+  labels:
+    app: bitwarden
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 15Gi

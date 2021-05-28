@@ -1,0 +1,50 @@
+---
+# Kubernetes v1.19
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bitwarden-ingress
+  labels:
+    app: bitwarden
+  annotations:
+    # Generate a Let's Encrypt SSL certificate through cert-manager (use letsencrypt-staging if you're testing it or letsencrypt-prod for production)
+    cert-manager.io/issuer: letsencrypt-staging
+    certmanager.k8s.io/acme-challenge-type: dns01
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Request-Id: $req_id";
+    nginx.ingress.kubernetes.io/connection-proxy-header: "keep-alive"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    # SSL Redirect+enforce SSL
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Max connections 25
+    nginx.ingress.kubernetes.io/limit-connections: "25"
+    # Limit request per second to 15
+    nginx.ingress.kubernetes.io/limit-rps: "15"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1024m
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+spec:
+  tls:
+  - hosts:
+    - bitwarden.domain.tld
+    secretName: tls-secret
+  rules:
+  - host: bitwarden.domain.tld
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bitwarden
+            port:
+              number: 80
+      - path: /notifications/hub
+        pathType: Prefix
+        backend:
+          service:
+            name: bitwarden
+            port:
+              number: 3012

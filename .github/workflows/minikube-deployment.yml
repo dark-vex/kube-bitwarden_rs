@@ -113,7 +113,7 @@ jobs:
           echo "------------- curl bitwarden via FQDN -------------"
           curl -kL https://bitwarden.$(cat HOST_IP).nip.io
           echo "------------- check status code -------------"
-          curl -I https://www.google.com | grep "HTTP" | awk '{print $2}' > STATUS_CODE
+          curl -kI https://bitwarden.$(cat HOST_IP).nip.io | grep "HTTP" | awk '{print $2}' > STATUS_CODE
           if [[ $(cat STATUS_CODE) -eq 200 ]]
           then
             exit 0

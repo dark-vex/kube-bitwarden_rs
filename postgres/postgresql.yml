@@ -1,0 +1,112 @@
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations: {}
+  name: bitwarden-postgresql-config
+  labels:
+    app: bitwarden
+data:
+  postgres.password: 'ohpaek6ohM'
+  postgres.user: 'db-user'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  name: bitwarden-postgresql
+  labels:
+    app: bitwarden
+spec:
+  sessionAffinity: None
+  type: ClusterIP
+  ports:
+    - port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: bitwarden
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations: {}
+  name: bitwarden-postgresql
+  labels:
+    app: bitwarden
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 25Gi
+  serviceName: bitwarden-postgresql-cluster
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  podManagementPolicy: OrderedReady
+  revisionHistoryLimit: 10
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bitwarden
+  template:
+    metadata:
+      labels:
+        app: bitwarden
+    spec:
+      initContainers:
+        - name: postgres-init
+          image: postgres:latest
+          resources: {}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+          command:
+            - chown
+            - 999:999
+            - /var/lib/postgresql/data
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+      containers:
+        - name: postgres
+          securityContext:
+            runAsUser: 999
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 1Gi
+          image: postgres:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: bitwarden-postgresql-config
+                  key: postgres.user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: bitwarden-postgresql-config
+                  key: postgres.password
+            - name: POSTGRES_DB
+              value: bitwarden       
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+      securityContext: {}
+      terminationGracePeriodSeconds: 120
+      dnsPolicy: ClusterFirst
+      volumes:
+        - name: postgresql-config
+          configMap:
+            defaultMode: 420
+            name: bitwarden-postgresql-config
